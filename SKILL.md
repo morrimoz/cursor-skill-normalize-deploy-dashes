@@ -4,16 +4,16 @@ description: >-
   Replaces Unicode em dashes with ASCII hyphens in deploy-facing text files before
   hosting or static deploy. Use when setting up deploy hooks, Firebase/Vercel/Netlify
   predeploy, CI publish steps, or when the user wants to strip em dashes from shipped
-  content because they read as AI-generated.
+  content to match a punctuation convention.
 ---
 
 # Normalize Deploy Dashes
 
-Ship ASCII hyphens (`-`) instead of em dashes (`—`). Run **after** content generators, **before** upload.
+Ship ASCII hyphens (U+002D) instead of em dashes (U+2014). Run **after** content generators, **before** upload.
 
 ## Why
 
-Em dashes in user-facing copy are a common AI-writing tell. Normalizing at deploy keeps authoring flexible while production stays consistent.
+A deploy-time normalization step applies the same punctuation convention after all content generators have run.
 
 ## Script
 
@@ -21,7 +21,7 @@ Em dashes in user-facing copy are a common AI-writing tell. Normalizing at deplo
 node scripts/normalize-deploy-dashes.mjs <dir> [dir ...]
 ```
 
-Optional: `--include-en-dash` also replaces en dashes (`–`).
+Optional: `--include-en-dash` also replaces en dashes (U+2013).
 
 Environment fallback when no dirs are passed:
 
@@ -84,7 +84,7 @@ Point at whatever directories your framework emits for static HTML/JS/CSS.
 
 ### Generic CI
 
-Any step between **artifact build** and **publish** works. Idempotent — safe to run every deploy.
+Any step between **artifact build** and **publish** works. Idempotent - safe to run every deploy.
 
 ## Agent workflow
 
@@ -96,7 +96,7 @@ When the user asks to add this to a project:
 4. Add an npm script for local runs: `"normalize:dashes": "node scripts/normalize-deploy-dashes.mjs <dirs>"`.
 5. Run once and confirm `[normalize-dashes] Updated N file(s)` or `No em dashes found.`
 
-Do **not** add postdeploy restore — hyphens are the desired shipped state.
+Do **not** add postdeploy restore - hyphens are the desired shipped state.
 
 ## Install this skill
 
