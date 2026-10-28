@@ -1,75 +1,60 @@
-# cursor-skill-normalize-deploy-dashes
+# Deploy dash normalizer
 
-Cursor Agent Skill + portable Node script to replace Unicode **em dashes** (`—`) with ASCII **hyphens** (`-`) in deploy-facing text files.
+**Category: Build utilities | Format: Node.js script and agent skill**
 
-## Why
+Replace Unicode em dashes with ASCII hyphens in generated text files before deployment. An optional flag also replaces en dashes. The script uses Node.js built-ins and has no package dependencies.
 
-Em dashes in shipped copy are a common AI-writing tell. Normalizing at deploy time lets authors and generators use either dash while production stays consistent.
+Use it when a site or publishing pipeline needs a consistent punctuation convention. It changes files in place, so run it against generated output or a version-controlled working copy.
 
 ## Quick start
 
-### 1. Copy the script
-
-```bash
-mkdir -p scripts
-curl -fsSL https://raw.githubusercontent.com/morrimoz/cursor-skill-normalize-deploy-dashes/main/scripts/normalize-deploy-dashes.mjs -o scripts/normalize-deploy-dashes.mjs
-```
-
-### 2. Run before deploy
-
-```bash
-node scripts/normalize-deploy-dashes.mjs public dist
-```
-
-### 3. Wire into your deploy hook
-
-**Firebase** — add to `firebase.json` hosting `predeploy` (after any generators):
-
-```json
-"predeploy": [
-  "npm run build",
-  "node scripts/normalize-deploy-dashes.mjs public"
-]
-```
-
-**npm** — add to `package.json`:
-
-```json
-"normalize:dashes": "node scripts/normalize-deploy-dashes.mjs public"
-```
-
-See [SKILL.md](./SKILL.md) for Vercel, Netlify, GitHub Actions, and Cursor agent integration.
-
-## Install as a Cursor skill
-
-**Personal (all projects):**
+With Node.js 18 or later:
 
 ```bash
 git clone https://github.com/morrimoz/cursor-skill-normalize-deploy-dashes.git
-cp -R cursor-skill-normalize-deploy-dashes ~/.cursor/skills/normalize-deploy-dashes
+cd cursor-skill-normalize-deploy-dashes
+node scripts/normalize-deploy-dashes.mjs path/to/output
 ```
 
-**Per repository:**
-
-```bash
-mkdir -p .cursor/skills/normalize-deploy-dashes/scripts
-cp SKILL.md .cursor/skills/normalize-deploy-dashes/
-cp scripts/normalize-deploy-dashes.mjs .cursor/skills/normalize-deploy-dashes/scripts/
-```
-
-Then ask Cursor: *"Use the normalize-deploy-dashes skill to wire em dash replacement into our deploy."*
+For example, the text `A service\u2014with support` becomes `A service-with support` when the input contains the actual Unicode character U+2014.
 
 ## Options
 
-| Flag / env | Effect |
-|------------|--------|
-| `--include-en-dash` | Also replace en dashes (`–`) |
-| `NORMALIZE_DASH_DIRS` | Default directories when no CLI args |
+| Option | Behaviour |
+| --- | --- |
+| Directory arguments | Scan the supplied directories recursively |
+| `--include-en-dash` | Also replace U+2013 |
+| `NORMALIZE_DASH_DIRS` | Supply default directories when no directory arguments are given |
+| `--help` | Print usage |
 
-## Requirements
+```bash
+node scripts/normalize-deploy-dashes.mjs --include-en-dash public
+```
 
-- Node.js 18+ (uses built-in `fs` / `path` only — no dependencies)
+## Add to a build
 
-## License
+Copy the script into the project's scripts folder, then run it after generators and before upload:
 
-MIT
+```json
+{
+  "scripts": {
+    "normalize:dashes": "node scripts/normalize-deploy-dashes.mjs public"
+  }
+}
+```
+
+For a typical generated `dist` directory, pass `dist` explicitly as a root. A nested directory named `dist` is skipped during traversal. Missing paths are reported and skipped; a zero exit status does not prove that every supplied path existed.
+
+## Agent integration
+
+Clone this repository into `~/.cursor/skills/normalize-deploy-dashes` to use it as a Cursor skill. [SKILL.md](SKILL.md) includes deployment-hook examples for Firebase, Vercel, Netlify and GitHub Actions.
+
+## Limits
+
+The script replaces characters in supported text files without parsing their syntax. Review its use on source files, quoted strings and content where punctuation has meaning. It does not translate literal backslash-u escape sequences.
+
+## Related tool
+
+[Webflow to clean code](https://github.com/morrimoz/webflow-to-clean-code) provides a broader static-site migration workflow.
+
+[MIT license](LICENSE)
